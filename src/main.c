@@ -31,6 +31,7 @@
 #include "em_prs.h"
 #include "display.h"
 #include "glib.h"
+#include "sensnode.h""
 
 /* Frequency of RTC (COMP0) pulses on PRS channel 2 
    = frequency of LCD polarity inversion. */
