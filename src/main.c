@@ -29,40 +29,11 @@
 #include "em_gpio.h"
 #include "em_pcnt.h"
 #include "em_prs.h"
-#include "display.h"
-#include "glib.h"
-#include "sensnode.h""
+#include "sensnode.h"
 
 /* Frequency of RTC (COMP0) pulses on PRS channel 2 
    = frequency of LCD polarity inversion. */
 #define RTC_PULSE_FREQUENCY    (64)
-
-/* Clock mode */
-typedef enum
-{
-  CLOCK_MODE_ANALOG,
-  CLOCK_MODE_DIGITAL
-} ClockMode_t;
-volatile ClockMode_t clockMode = CLOCK_MODE_ANALOG;
-
-/* The current time reference. Number of seconds since midnight
- * January 1, 1970.  */
-static volatile time_t curTime = 0;
-
-/* PCNT interrupt counter */
-static volatile int pcntIrqCount = 0;
-
-/* Flag to check when we should redraw a frame */
-static volatile bool updateDisplay = true;
-static volatile bool timeIsFastForwarding = false;
-
-/* Global glib context */
-GLIB_Context_t gc;
-
-/* Analog clock prototypes */
-void analogClockInitGraphics(void);
-void analogClockUpdate(struct tm *t, bool forceRedraw);
-
 
 /**************************************************************************//**
  * @brief Setup GPIO interrupt for pushbuttons.
@@ -95,10 +66,6 @@ void GPIO_EVEN_IRQHandler(void)
 {
   /* Acknowledge interrupt */
   GPIO_IntClear(1 << 8);
-
-  /* Toggle clock mode (analog/digital) */
-  clockMode = (clockMode == CLOCK_MODE_ANALOG) ? CLOCK_MODE_DIGITAL : CLOCK_MODE_ANALOG;
-  updateDisplay = true;
 }
 
 /**************************************************************************//**
@@ -109,12 +76,6 @@ void GPIO_ODD_IRQHandler(void)
 {
   /* Acknowledge interrupt */
   GPIO_IntClear(1 << 9);
-
-  /* Increase time by 1 second. */
-  curTime++;
-
-  timeIsFastForwarding = true;
-  updateDisplay = true;
 }
 
 
@@ -152,130 +113,7 @@ void pcntInit(void)
 void PCNT0_IRQHandler(void)
 {
   PCNT_IntClear(PCNT0, PCNT_IF_OF);
-  
-  pcntIrqCount++;
-  
-  /* Increase time with 1s */
-  if (!(timeIsFastForwarding))
-  {
-    curTime++;
-  }
-
-  /* Notify main loop to redraw clock on display. */
-  updateDisplay = true;
 }
-
-/**************************************************************************//**
- * @brief  Increments the clock quickly while PB1 is pressed.
- *         A callback is used to update either the analog or the digital clock.
- *
- *****************************************************************************/
-void fastForwardTime(void (*drawClock)(struct tm*, bool redraw))
-{
-  unsigned int i = 0;
-  struct tm    *time; 
-  
-  /* Wait 2 seconds before starting to adjust quickly */
-  int waitForPcntIrqCount = pcntIrqCount + 2;
-
-  while (pcntIrqCount != waitForPcntIrqCount)
-  {
-    /* Return if the button is released */
-    if (GPIO_PinInGet(gpioPortC, 9) == 1) {
-      timeIsFastForwarding = false;
-      return;
-    }
-
-    /* Keep updating the second counter while waiting */
-    if (updateDisplay)
-    {
-      time = localtime((time_t const *) &curTime);
-      drawClock(time, true);
-    }
-
-    EMU_EnterEM2(false);
-  }
-
-  /* Keep incrementing the time while the button is held */
-  while (GPIO_PinInGet(gpioPortC, 9) == 0)
-  {
-    if (i % 1000 == 0)
-    {
-      /* Increase time by 1 minute (60 seconds). */
-      curTime += 60;
-
-      time = localtime((time_t const *) &curTime);
-      drawClock(time, true);
-    }
-    i++;
-  }
-  timeIsFastForwarding = false;
-}
-
-/**************************************************************************//**
- * @brief  Shows an analog clock on the display.
- *
- *****************************************************************************/
-void analogClockShow(bool redraw)
-{
-  /* Convert time format */
-  struct tm *time = localtime((time_t const *) &curTime);
-
-  if (updateDisplay)
-  {
-    /* Draw clock face to frame buffer */
-    analogClockUpdate(time, redraw);
-    updateDisplay = false;
-    if (timeIsFastForwarding)
-    {
-      fastForwardTime(analogClockUpdate);
-    }
-  }
-}
-
-/**************************************************************************//**
- * @brief  Updates the digital clock.
- *
- *****************************************************************************/
-void digitalClockUpdate(struct tm *time, bool redraw)
-{ 
-  char clockString[16];
-  
-  if (redraw)
-  {
-    GLIB_setFont(&gc, (GLIB_Font_t *)&GLIB_FontNumber16x20);   
-    gc.backgroundColor = White;
-    gc.foregroundColor = Black;
-    GLIB_clear(&gc);  
-  }     
-  
-  sprintf(clockString, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
-  GLIB_drawString(&gc, clockString, strlen(clockString), 1, 52, true);
-
-  /* Update display */
-  DMD_updateDisplay();
-}
-
-/**************************************************************************//**
- * @brief  Shows an digital clock on the display.
- *
- *****************************************************************************/
-void digitalClockShow(bool redraw)
-{
-  /* Convert time format */
-  struct tm *time = localtime((time_t const *) &curTime);
-
-  if (updateDisplay)
-  {
-    digitalClockUpdate(time, redraw);
-    updateDisplay = false;
-    if (timeIsFastForwarding)
-    {
-      fastForwardTime(digitalClockUpdate);
-    }
-  }
-}
-
 
 /**************************************************************************//**
  * @brief  Main function of clock example.
@@ -283,10 +121,6 @@ void digitalClockShow(bool redraw)
  *****************************************************************************/
 int main(void)
 {  
-  EMSTATUS status;
-  bool redraw;
-  ClockMode_t prevClockMode = CLOCK_MODE_DIGITAL;
-  
   /* Chip errata */
   CHIP_Init();
 
@@ -297,44 +131,14 @@ int main(void)
 
   /* Setup GPIO for pushbuttons. */
   gpioSetup();
-
-  /* Initialize display module */    
-  status = DISPLAY_Init();
-  if (DISPLAY_EMSTATUS_OK != status)
-    while (true)
-      ;
-
-  /* Initialize the DMD module for the DISPLAY device driver. */
-  status = DMD_init(0);
-  if (DMD_OK != status)
-    while (true)
-      ;
-
-  status = GLIB_contextInit(&gc);
-  if (GLIB_OK != status)
-    while (true)
-      ;
   
   /* Set PCNT to generate interrupt every second */
   pcntInit();
   
-  /* Pre-compte positions for the analog graphics */
-  analogClockInitGraphics();
-
   /* Enter infinite loop that switches between analog and digitcal clock
    * modes, toggled by pressing the button PB0. */
   while (true)
   {    
-    redraw = (prevClockMode != clockMode);
-    prevClockMode = clockMode;
-    if (CLOCK_MODE_ANALOG == clockMode)
-    {
-      analogClockShow(redraw);
-    }
-    else
-    {
-      digitalClockShow(redraw);
-    }
     /* Sleep between each frame update */
     EMU_EnterEM2(false);
   }
