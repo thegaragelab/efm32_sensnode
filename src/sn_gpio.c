@@ -19,26 +19,48 @@ typedef struct _PININFO {
 } PININFO;
 
 // Convert a bit number into a flag bit
-#define FLAG(n) (1<<(n))
+#define SETBIT(n) (1<<(n))
 
 /** Map SensNode pin functions to CPU pins
  */
 static const PININFO g_pinInfo[] = {
-  { gpioPortE, 13, FLAG(DIGITAL_INPUT)|FLAG(DIGITAL_OUTPUT) },               // PIN0
-  { gpioPortE, 12, FLAG(DIGITAL_INPUT)|FLAG(DIGITAL_OUTPUT) },               // PIN1
-  { gpioPortD, 4,  FLAG(DIGITAL_INPUT)|FLAG(DIGITAL_OUTPUT)|FLAG(ANALOG) },  // PIN2
-  { gpioPortD, 5,  FLAG(DIGITAL_INPUT)|FLAG(DIGITAL_OUTPUT)|FLAG(ANALOG) },  // PIN3
-  { gpioPortD, 6,  FLAG(DIGITAL_INPUT)|FLAG(DIGITAL_OUTPUT)|FLAG(ANALOG) },  // PIN4
-  { gpioPortC, 8,  FLAG(DIGITAL_INPUT) },                                    // PIN_ACTION
+  { gpioPortE, 13, SETBIT(DIGITAL_INPUT)|SETBIT(DIGITAL_OUTPUT) },               // PIN0
+  { gpioPortE, 12, SETBIT(DIGITAL_INPUT)|SETBIT(DIGITAL_OUTPUT) },               // PIN1
+  { gpioPortD, 4,  SETBIT(DIGITAL_INPUT)|SETBIT(DIGITAL_OUTPUT)|SETBIT(ANALOG) },  // PIN2
+  { gpioPortD, 5,  SETBIT(DIGITAL_INPUT)|SETBIT(DIGITAL_OUTPUT)|SETBIT(ANALOG) },  // PIN3
+  { gpioPortD, 6,  SETBIT(DIGITAL_INPUT)|SETBIT(DIGITAL_OUTPUT)|SETBIT(ANALOG) },  // PIN4
+  { gpioPortC, 8,  SETBIT(DIGITAL_INPUT) },                                    // PIN_ACTION
   { 0, 0, 0 },                                                               // PIN_LATCH (unused)
-  { gpioPortC, 10, FLAG(DIGITAL_OUTPUT) },                                   // PIN_INDICATOR
+  { gpioPortC, 10, SETBIT(DIGITAL_OUTPUT) },                                   // PIN_INDICATOR
   { 0, 0, 0 },                                                               // PIN_BATTERY (unused)
-  { gpioPortA, 10, FLAG(DIGITAL_OUTPUT) },                                   // PIN_CE
-  { gpioPortA, 9,  FLAG(DIGITAL_OUTPUT) },                                   // PIN_CSN
-  { gpioPortA, 2,  FLAG(DIGITAL_OUTPUT) },                                   // PIN_SCK
-  { gpioPortA, 0,  FLAG(DIGITAL_INPUT) },                                    // PIN_MISO
+  { gpioPortA, 10, SETBIT(DIGITAL_OUTPUT) },                                   // PIN_CE
+  { gpioPortA, 9,  SETBIT(DIGITAL_OUTPUT) },                                   // PIN_CSN
+  { gpioPortA, 2,  SETBIT(DIGITAL_OUTPUT) },                                   // PIN_SCK
+  { gpioPortA, 0,  SETBIT(DIGITAL_INPUT) },                                    // PIN_MISO
   { gpioPortA, 1,  DIGITAL_OUTPUT },                                         // PIN_MOSI
   };
+
+/** Remember which pins have been configured */
+static uint16_t g_pinsUsed = 0;
+
+/** Mask to clean all even numbered IO pins
+ */
+#define GPIO_PIN_EVEN \
+  SETBIT(0) | \
+  SETBIT(2) | \
+  SETBIT(4) | \
+  SETBIT(6) | \
+  SETBIT(8) | \
+  SETBIT(10) | \
+  SETBIT(12)
+
+/** Mask to clean all even numbered IO pins
+ */
+#define GPIO_PIN_ODD \
+  SETBIT(1) | \
+  SETBIT(5) | \
+  SETBIT(9) | \
+  SETBIT(13)
 
 /** Initialise the GPIO subsystem
  */
@@ -50,6 +72,26 @@ void initGPIO() {
     if(g_pinInfo[pin].m_modes)
       GPIO_PinModeSet(g_pinInfo[pin].m_port, g_pinInfo[pin].m_pin, gpioModeDisabled, 0);
     }
+  }
+
+/** GPIO interrupt handler (even numbered pins)
+ *
+ * The interrupt handler doesn't actually do anything, enabling interrupts
+ * allows pin change events to trigger wake from sleep.
+ */
+void GPIO_EVEN_IRQHandler(void) {
+  /* Acknowledge interrupt */
+  GPIO_IntClear(GPIO_PIN_EVEN);
+  }
+
+/** GPIO interrupt handler (even numbered pins)
+ *
+ * The interrupt handler doesn't actually do anything, enabling interrupts
+ * allows pin change events to trigger wake from sleep.
+ */
+void GPIO_ODD_IRQHandler(void) {
+  /* Acknowledge interrupt */
+  GPIO_IntClear(GPIO_PIN_ODD);
   }
 
 //---------------------------------------------------------------------------
@@ -65,8 +107,29 @@ void initGPIO() {
  * @return true if the pin was configured as requested.
  */
 bool pinConfig(PIN pin, PIN_MODE mode, uint8_t flags) {
-	return false;
-}
+  // Is it a valid pin?
+  if((pin<0)||(pin>=PINMAX))
+    return false;
+  // Has the pin already been configured?
+  if(g_pinsUsed&SETBIT(pin))
+    return false;
+  // Does the pin support the requested mode?
+  if(!(g_pinInfo[pin].m_modes&SETBIT(mode)))
+    return false;
+  // Do the configuration
+  switch(mode) {
+    case ANALOG:
+      // TODO: Not yet supported
+      break;
+    case DIGITAL_INPUT:
+
+    case DIGITAL_OUTPUT:
+    default:
+      return false;
+    }
+  // Pin configured
+  return true;
+  }
 
 /** Read the value of a digital pin.
  *

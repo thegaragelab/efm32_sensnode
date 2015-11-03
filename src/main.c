@@ -58,25 +58,6 @@ static void gpioSetup(void)
   NVIC_EnableIRQ(GPIO_ODD_IRQn);
 }
 
-/**************************************************************************//**
- * @brief GPIO Interrupt handler (PB0)
- *        Switches between analog and digital clock modes.
- *****************************************************************************/
-void GPIO_EVEN_IRQHandler(void)
-{
-  /* Acknowledge interrupt */
-  GPIO_IntClear(1 << 8);
-}
-
-/**************************************************************************//**
- * @brief GPIO Interrupt handler (PB1)
- *        Increments the time by one minute.
- *****************************************************************************/
-void GPIO_ODD_IRQHandler(void)
-{
-  /* Acknowledge interrupt */
-  GPIO_IntClear(1 << 9);
-}
 
 
 /**************************************************************************//**
