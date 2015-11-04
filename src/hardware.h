@@ -13,4 +13,8 @@
  */
 void initGPIO();
 
+/** Initialise the SPI subsystem
+ */
+void initSPI();
+
 #endif /* __HARDWARE_H */
