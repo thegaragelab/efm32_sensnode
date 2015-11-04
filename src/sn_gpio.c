@@ -187,10 +187,10 @@ bool pinRead(PIN pin) {
 void pinWrite(PIN pin, bool value) {
   // Is it a valid pin?
   if((pin<0)||(pin>=PINMAX))
-    return false;
+    return;
   // Has the pin been configured?
   if(g_pinsUsed&SETBIT(pin))
-    return false;
+    return;
   // Set the output state of the pin
   if(value)
     GPIO_PinOutSet(g_pinInfo[pin].m_port, g_pinInfo[pin].m_pin);
