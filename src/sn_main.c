@@ -15,6 +15,26 @@
 #include "sensnode.h"
 #include "hardware.h"
 
+static void mainLoop(bool callApp) {
+  // TODO: Internal loop (network processing, action button events, indicator updates)
+  if(callApp)
+    loop();
+  }
+
+/** Delay the invocation of the application loop for a specified duration
+ *
+ * This function will block until the specified time period has elapsed but
+ * background tasks (network operations, battery monitoring, etc) will continue.
+ *
+ * @param duration the amount of time to delay for
+ * @param units the units the duration is specified in
+ */
+void delay(uint32_t duration, TIMEUNIT units) {
+  uint32_t start = getTicks();
+  while(!timeElapsed(start, duration, units))
+    mainLoop(false);
+  }
+
 /** Program entry point
  */
 int main(void) {
@@ -39,7 +59,6 @@ int main(void) {
   setup();
   // Main loop
   while(true) {
-    // TODO: Internal loop (network processing, action button events, indicator updates)
-    loop();
+    mainLoop(true);
     }
   }

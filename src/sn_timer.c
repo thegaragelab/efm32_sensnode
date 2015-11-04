@@ -9,7 +9,7 @@
 #include "sensnode.h"
 
 // Number of ticks per second
-#define TICKS_PER_SECOND 100
+#define TICKS_PER_SECOND 1000
 
 // The current system tick count
 static volatile uint32_t g_systicks;
@@ -59,7 +59,20 @@ uint32_t getTicks() {
  * @return the amount of elapsed time in whole units.
  */
 uint32_t timeElapsed(uint32_t start, uint32_t end, TIMEUNIT units) {
-  return 0;
+  uint32_t elapsed;
+  if(start>end) // Handle wrap around
+    elapsed = ((uint32_t)-1) - end + start;
+  else
+    elapsed = end - start;
+  // Convert to appropriate time period
+  switch(units) {
+    case MILLISECOND:
+      break;
+    case SECOND:
+      elapsed = elapsed / 1000;
+      break;
+    }
+  return elapsed;
   }
 
 /** Determine if the specified amount of time has expired.
@@ -76,17 +89,5 @@ uint32_t timeElapsed(uint32_t start, uint32_t end, TIMEUNIT units) {
  *              point.
  */
 bool timeExpired(uint32_t reference, uint32_t duration, TIMEUNIT units) {
-  return false;
-  }
-
-/** Delay the invocation of the application loop for a specified duration
- *
- * This function will block until the specified time period has elapsed but
- * background tasks (network operations, battery monitoring, etc) will continue.
- *
- * @param duration the amount of time to delay for
- * @param units the units the duration is specified in
- */
-void delay(uint32_t duration, TIMEUNIT units) {
-  // TODO: This should be implemented in main().
+  return timeElapsed(reference, getTicks(), units)>=duration;
   }

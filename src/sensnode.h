@@ -28,8 +28,6 @@ extern "C" {
 /** Time units
  */
 typedef enum {
-  TICK = 0,    //!< Raw ticks (processor dependent)
-  MICROSECOND, //!< 1/1000000 of a second
   MILLISECOND, //!< 1/1000 of a second
   SECOND,      //!< Whole seconds
   } TIMEUNIT;
