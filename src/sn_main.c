@@ -24,7 +24,9 @@ int main(void) {
   CMU_ClockSelectSet( cmuClock_HF, cmuSelect_HFRCO  );
   CMU_HFRCOBandSet( cmuHFRCOBand_21MHz );
   // HAL setup
+  initTICK();
   initGPIO();
+  initSPI();
   // Configure our standard pins
   pinConfig(PIN_ACTION, DIGITAL_INPUT, WAKEUP); // Action button input
   pinConfig(PIN_LATCH, DIGITAL_OUTPUT, 1);      // Power latch output

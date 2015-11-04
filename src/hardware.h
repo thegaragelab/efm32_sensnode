@@ -17,4 +17,8 @@ void initGPIO();
  */
 void initSPI();
 
+/** Initialise the timer subsystem
+ */
+void initTICK();
+
 #endif /* __HARDWARE_H */
