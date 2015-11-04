@@ -170,7 +170,7 @@ bool pinRead(PIN pin) {
   if((pin<0)||(pin>=PINMAX))
     return false;
   // Has the pin been configured?
-  if(g_pinsUsed&SETBIT(pin))
+  if(!(g_pinsUsed&SETBIT(pin)))
     return false;
   // Read the pin input state
   return GPIO_PinInGet(g_pinInfo[pin].m_port, g_pinInfo[pin].m_pin) == 1;
@@ -189,7 +189,7 @@ void pinWrite(PIN pin, bool value) {
   if((pin<0)||(pin>=PINMAX))
     return;
   // Has the pin been configured?
-  if(g_pinsUsed&SETBIT(pin))
+  if(!(g_pinsUsed&SETBIT(pin)))
     return;
   // Set the output state of the pin
   if(value)
