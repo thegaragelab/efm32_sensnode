@@ -1,4 +1,4 @@
-#Tue Nov 03 15:06:47 EST 2015
+#Wed Nov 04 11:56:03 EST 2015
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.indent_declaration_compare_to_template_header=false
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_question_in_conditional=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_comma_in_enum_declarations=do not insert
@@ -46,6 +46,7 @@
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation=16
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_comma_in_template_arguments=do not insert
 /instance/org.eclipse.cdt.ui/org.eclipse.cdt.ui.formatterprofiles.version=1
+/instance/org.eclipse.ui.workbench/ColorsAndFontsPreferencePage.expandedCategories=Torg.eclipse.ui.workbenchMisc
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_after_comma_in_expression_list=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_after_comma_in_method_declaration_throws=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.indent_switchstatements_compare_to_cases=true
@@ -77,7 +78,7 @@
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_while=do not insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_prefix_operator=do not insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_closing_brace_in_array_initializer=insert
-/instance/org.eclipse.cdt.managedbuilder.core/properties/STK3200_clock.com.silabs.ide.project.core.cdt.cdtMbsProjectType.920750471/com.silabs.ide.si32.gcc.debug\#com.silabs.ide.si32.gcc\:4.8.3.20131129=\#\r\n\#Tue Nov 03 15\:04\:23 EST 2015\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.linker.base.218837960\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:04\\\:23 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.base.1900343639\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:04\\\:23 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.base.1189581070\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:04\\\:23 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.linker.base.1989648531\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:04\\\:23 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.debug\\\#com.silabs.ide.si32.gcc\\\:4.8.3.20131129\=\\\#\\r\\n\\\#Tue Nov 03 14\\\:18\\\:02 EST 2015\\r\\nrcState\\\=0\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.assembler.base.1062618842\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:04\\\:23 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.340966849\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:04\\\:23 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.archiver.base.1025486060\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:04\\\:23 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\n
+/instance/org.eclipse.cdt.managedbuilder.core/properties/STK3200_clock.com.silabs.ide.project.core.cdt.cdtMbsProjectType.920750471/com.silabs.ide.si32.gcc.debug\#com.silabs.ide.si32.gcc\:4.8.3.20131129=\#\r\n\#Wed Nov 04 11\:47\:41 EST 2015\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.linker.base.218837960\=\\\#\\r\\n\\\#Wed Nov 04 11\\\:47\\\:41 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.base.1900343639\=\\\#\\r\\n\\\#Wed Nov 04 11\\\:47\\\:41 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.base.1189581070\=\\\#\\r\\n\\\#Wed Nov 04 11\\\:47\\\:41 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.linker.base.1989648531\=\\\#\\r\\n\\\#Wed Nov 04 11\\\:47\\\:41 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.debug\\\#com.silabs.ide.si32.gcc\\\:4.8.3.20131129\=\\\#\\r\\n\\\#Wed Nov 04 08\\\:46\\\:49 EST 2015\\r\\nrcState\\\=0\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.assembler.base.1062618842\=\\\#\\r\\n\\\#Wed Nov 04 11\\\:47\\\:41 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.340966849\=\\\#\\r\\n\\\#Wed Nov 04 11\\\:47\\\:41 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.archiver.base.1025486060\=\\\#\\r\\n\\\#Wed Nov 04 11\\\:47\\\:41 EST 2015\\r\\nrebuildState\\\=false\\r\\n\r\n
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_after_opening_brace_in_array_initializer=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.tabulation.char=space
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.alignment_for_expression_list=0
@@ -101,6 +102,7 @@
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_new_line_before_else_in_if_statement=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_after_comma_in_array_initializer=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.indent_empty_lines=false
+/instance/org.eclipse.ui.workbench/org.eclipse.jface.textfont=1|Anonymous Pro|14.25|0|WINDOWS|1|-19|0|0|0|400|0|0|0|0|3|2|1|49|Anonymous Pro;
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_colon_in_base_clause=do not insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.brace_position_for_type_declaration=end_of_line
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.alignment_for_member_access=0
@@ -151,10 +153,10 @@ file_export_version=3.0
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_comma_in_method_declaration_throws=do not insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_if=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_exception_specification=insert
+/instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.alignment_for_throws_clause_in_method_declaration=16
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_parenthesized_expression=do not insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.continuation_indentation=2
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_while=do not insert
-/instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.alignment_for_throws_clause_in_method_declaration=16
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_closing_bracket=do not insert
 /configuration/com.silabs.ide.internal.ui.CallHome/offline=2
 /instance/org.eclipse.cdt.ui/useAnnotationsPrefPage=true
@@ -190,12 +192,13 @@ file_export_version=3.0
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_opening_brace_in_array_initializer=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_comma_in_expression_list=do not insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_parenthesized_expression=do not insert
+/instance/org.eclipse.ui.workbench/ColorsAndFontsPreferencePage.selectedElement=Forg.eclipse.jface.textfont
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_if=do not insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_while=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.use_tabs_only_for_leading_indentations=false
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_switch=do not insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_after_closing_angle_bracket_in_template_parameters=insert
-/instance/org.eclipse.cdt.managedbuilder.core/properties/STK3200_clock.com.silabs.ide.project.core.cdt.cdtMbsProjectType.920750471/com.silabs.ide.si32.gcc.release\#com.silabs.ide.si32.gcc\:4.8.3.20131129=\#\r\n\#Tue Nov 03 15\:03\:35 EST 2015\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.base.2017783551\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:03\\\:35 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.linker.base.1664641698\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:03\\\:35 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.linker.base.1503309911\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:03\\\:35 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.801907187\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:03\\\:35 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.assembler.base.466449830\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:03\\\:35 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.archiver.base.2142377375\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:03\\\:35 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.base.527629119\=\\\#\\r\\n\\\#Tue Nov 03 15\\\:03\\\:35 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\n
+/instance/org.eclipse.cdt.managedbuilder.core/properties/STK3200_clock.com.silabs.ide.project.core.cdt.cdtMbsProjectType.920750471/com.silabs.ide.si32.gcc.release\#com.silabs.ide.si32.gcc\:4.8.3.20131129=\#\r\n\#Wed Nov 04 09\:02\:11 EST 2015\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.base.2017783551\=\\\#\\r\\n\\\#Wed Nov 04 09\\\:02\\\:11 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.linker.base.1664641698\=\\\#\\r\\n\\\#Wed Nov 04 09\\\:02\\\:11 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.linker.base.1503309911\=\\\#\\r\\n\\\#Wed Nov 04 09\\\:02\\\:11 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.801907187\=\\\#\\r\\n\\\#Wed Nov 04 09\\\:02\\\:11 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.assembler.base.466449830\=\\\#\\r\\n\\\#Wed Nov 04 09\\\:02\\\:11 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.archiver.base.2142377375\=\\\#\\r\\n\\\#Wed Nov 04 09\\\:02\\\:11 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\ncom.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.base.527629119\=\\\#\\r\\n\\\#Wed Nov 04 09\\\:02\\\:11 EST 2015\\r\\nrebuildState\\\=true\\r\\n\r\n
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.alignment_for_overloaded_left_shift_chain=16
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_new_line_in_empty_block=insert
 /instance/org.eclipse.cdt.core/org.eclipse.cdt.core.formatter.insert_space_after_closing_brace_in_block=insert
