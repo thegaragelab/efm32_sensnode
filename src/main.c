@@ -20,6 +20,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "sensnode.h"
+#include "nokialcd.h"
+
+static uint32_t lastChange;
+static const uint8_t SAMPLE[] = { 'h', 'e', 'l', 'l', 'o' };
+
 
 /** User application initialisation
  *
@@ -29,7 +34,9 @@
  * network subsystem initialised (if not yet connected).
  */
 void setup() {
-
+  lastChange = getTicks();
+  // Initialise the LCD
+  lcdInit(PIN0, PIN1, PIN2);
   }
 
 /** User application loop
@@ -40,6 +47,12 @@ void setup() {
  */
 void loop() {
   // EMU_EnterEM2(false);
-  // Just make indicator state follow the action button
-  pinWrite(PIN_INDICATOR, pinRead(PIN_ACTION));
+  static bool state = false;
+  if(timeExpired(lastChange, 1, SECOND)) {
+    lastChange = getTicks();
+    state = !state;
+    pinWrite(PIN_INDICATOR, state);
+    lcdClear(state);
+    lcdWriteStr(0, 2, "Hello Honey!", state);
+    }
   }
