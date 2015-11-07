@@ -37,7 +37,7 @@ static const PININFO g_pinInfo[] = {
   { gpioPortA, 9,  SETBIT(DIGITAL_OUTPUT) },                                      // PIN_CSN
   { gpioPortA, 2,  SETBIT(DIGITAL_OUTPUT) },                                      // PIN_SCK
   { gpioPortA, 0,  SETBIT(DIGITAL_INPUT) },                                       // PIN_MISO
-  { gpioPortA, 1,  DIGITAL_OUTPUT },                                              // PIN_MOSI
+  { gpioPortA, 1,  SETBIT(DIGITAL_OUTPUT) },                                              // PIN_MOSI
   };
 
 /** Remember which pins have been configured */
