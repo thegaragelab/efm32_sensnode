@@ -21,4 +21,8 @@ void initSPI();
  */
 void initTICK();
 
+/** Initialise the serial hardware
+ */
+void initSERIAL();
+
 #endif /* __HARDWARE_H */

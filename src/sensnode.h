@@ -443,7 +443,7 @@ typedef enum {
   B115200
   } BAUDRATE;
 
-/** Initialise the serial port
+/** Configure the serial port
  *
  * The serial port is always operated in 8 bit mode with a single stop bit
  * (8N1). The core initialisation will set the initial baudrate to 57600 but
@@ -451,7 +451,7 @@ typedef enum {
  *
  * @param rate the requested baud rate
  */
-void serialInit(BAUDRATE rate);
+void serialConfig(BAUDRATE rate);
 
 /** Write a single character to the serial port
  *
