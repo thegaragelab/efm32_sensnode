@@ -64,6 +64,7 @@ void USART1_RX_IRQHandler(void) {
     if(write!=g_read)
       g_write = write;
     }
+  USART_IntClear(uart, USART_IF_RXDATAV);
   }
 
 /** Write a single character to the serial port
@@ -91,23 +92,30 @@ static bool serial_putc(char ch, void *pData) {
  * @param rate the requested baud rate
  */
 void serialConfig(BAUDRATE rate) {
-  USART_TypeDef *usart = USART1;
-  USART_InitAsync_TypeDef init = USART_INITASYNC_DEFAULT;
   // Disable it and disable interrupts
-  USART_Enable(usart, usartDisable);
-  NVIC_DisableIRQ(USART1_RX_IRQn);
-  NVIC_ClearPendingIRQ( USART1_RX_IRQn);
-  /* Configure USART for basic async operation */
-  init.enable = usartDisable;
-  init.baudrate = BAUDRATES[rate];
-  USART_InitAsync(usart, &init);
-  /* Clear previous RX interrupts */
-  USART_IntClear((USART_TypeDef *) cmuClock_USART1, USART_IF_RXDATAV);
-  USART_IntEnable((USART_TypeDef *) cmuClock_USART1, USART_IF_RXDATAV);
-  NVIC_ClearPendingIRQ( USART1_RX_IRQn);
+  USART_Enable(USART1, usartDisable);
+  // Set up the configuration
+  USART_InitAsync_TypeDef init =
+   {
+     .enable = usartDisable,      // wait to enable transmitter and receiver
+     .refFreq = 0,                // setting refFreq to 0 will invoke the CMU_ClockFreqGet() function and measure the HFPER clock
+     .baudrate = BAUDRATES[rate], // desired baud rate
+     .oversampling = usartOVS16,  // set oversampling to x16
+     .databits = usartDatabits8,  // 8 data bits
+     .parity = usartNoParity,     // no parity bits
+     .stopbits = usartStopbits1,  // 1 stop bit
+     .mvdis = false,              // use majority voting
+     .prsRxEnable = false,        // not using PRS input
+     .prsRxCh = usartPrsRxCh0,    // doesn't matter what channel we select
+   };
+  USART_InitAsync(USART1, &init);      // apply configuration to USART1
+  USART1->ROUTE = USART_ROUTE_RXPEN | USART_ROUTE_TXPEN | _USART_ROUTE_LOCATION_LOC0; // clear buffers, enable transmitter and receiver pins
+  USART_IntClear(USART1, _USART_IF_MASK);  // clear all USART interrupt flags
+  NVIC_ClearPendingIRQ(USART1_RX_IRQn);    // clear pending RX interrupt flag in NVIC
+  NVIC_ClearPendingIRQ(USART1_TX_IRQn);    // clear pending TX interrupt flag in NVIC
+  USART_IntEnable(USART1, USART_IF_RXDATAV); // Enable RX interrupt
   NVIC_EnableIRQ(USART1_RX_IRQn);
-  /* Finally enable it */
-  USART_Enable(usart, usartEnable);
+  USART_Enable(USART1, usartEnable);       // enable transmitter and receiver
   }
 
 /** Write a single character to the serial port
@@ -115,6 +123,7 @@ void serialConfig(BAUDRATE rate) {
  * @param ch the character to write
  */
 void serialWrite(uint8_t ch) {
+  USART_Tx(USART1, ch);
   }
 
 /** Print a sequence of characters to the serial port.

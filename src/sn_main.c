@@ -41,12 +41,13 @@ int main(void) {
   // EFM32 specific setup
   CHIP_Init(); // Chip errata configuration
   // Set 21MHz clock
-  CMU_ClockSelectSet( cmuClock_HF, cmuSelect_HFRCO  );
-  CMU_HFRCOBandSet( cmuHFRCOBand_21MHz );
+  CMU_OscillatorEnable(cmuOsc_HFXO, true, true);          // enable HF XTAL osc and wait for it to stabilize
+  CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);        // select HF XTAL osc as system clock source (24MHz)
   // HAL setup
   initTICK();
   initGPIO();
   initSPI();
+  initSERIAL();
   // Configure our standard pins
   pinConfig(PIN_ACTION, DIGITAL_INPUT, WAKEUP); // Action button input
   pinConfig(PIN_LATCH, DIGITAL_OUTPUT, 1);      // Power latch output
