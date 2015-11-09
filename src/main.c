@@ -55,4 +55,7 @@ void loop() {
     lcdClear(state);
     lcdWriteStr(0, 2, "Hello Honey!", state);
     }
+  // Check for serial input
+  while(serialAvailable())
+    serialWrite(serialRead());
   }
