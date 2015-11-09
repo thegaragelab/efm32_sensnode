@@ -525,7 +525,7 @@ int serialRead();
 
 /** Function prototype for writing a single byte
  *
- * This function prototype is used by the @see vprintf function to output
+ * This function prototype is used by the @see vformat function to output
  * formatted data.
  *
  * @param ch the character to write
@@ -535,45 +535,41 @@ int serialRead();
  */
 typedef bool (*FN_PUTC)(char ch, void *pData);
 
-// SWG: SiLabs library does provide sprintf/vprintf implementations. Don't use ours for now
-#if defined(PRINTF)
-
 /** Generate a formatted string
  *
  * This function is used to generate strings from a format. This implementation
  * uses a user provided function pointer to output the data as it is generated.
+ * Be aware that this is not a direct replacement for 'printf()' but provides
+ * similar (but limited) functionality.
  *
- * The function supports a subset of the 'printf' string formatting syntax.
- * Allowable insertion types are:
+ * A format string uses the # character to indicate insertions, the character
+ * immediately following the # determines the size and output format of the
+ * insertion value as follows:
  *
- *  %% - Display a % character. There should be no entry in the variable
- *       argument list for this entry.
- *  %u - Display an unsigned integer in decimal. The matching argument may
- *       be any 16 bit value.
- *  %U - Display an unsigned integer in decimal. The matching argument may
- *       be any 32 bit value.
- *  %x - Display an unsigned integer in hexadecimal. The matching argument may
- *       be any 16 bit value.
- *  %X - Display an unsigned integer in hexadecimal. The matching argument may
- *       be any 32 bit value.
- *  %c - Display a single ASCII character. The matching argument may be any 8
- *       bit value.
- *  %s - Display a NUL terminated string from RAM. The matching argument must
- *       be a pointer to a RAM location.
+ *   ## - insert a # character, no value parameter is required.
+ *   #c - insert a single ASCII character. Expects a matching 'char' parameter.
+ *   #s - insert a NUL terminated string. Expects a matching 'const char *' parameter.
+ *   #i - insert a decimal signed integer. Expects a matching 'int' parameter.
+ *   #u - insert a decimal unsigned integer. Expects a matching 'unsigned' parameter.
+ *   #l - insert a decimal signed long. Expects a matching 'long' parameter.
+ *   #U - insert a decimal unsigned long. Expects a matching 'unsigned long' parameter.
+ *   #b - insert a two digit hex byte. Expects a matching 'char' parameter.
+ *   #w - insert a four digit hex byte. Expects a matching 'unsigned' parameter.
+ *   #d - insert a eight digit hex byte. Expects a matching 'unsigned long' parameter.
  *
  * @param pfnPutC pointer the character output function
  * @param pData pointer to a user provided data block. This is passed to the
  *              character output function with each character.
- * @param cszFormat pointer to a nul terminated format string.
+ * @param cszFormat pointer to a NUL terminated format string.
  * @param args the variadic argument list.
  *
  * @return the number of characters generated.
  */
-int vprintf(FN_PUTC pfnPutC, void *pData, const char *cszFormat, va_list args);
+int vformat(FN_PUTC pfnPutC, void *pData, const char *cszFormat, va_list args);
 
 /** Generate a formatted string
  *
- * This function uses the @see xprintf function to generate a formatted string
+ * This function uses the @see vformat function to generate a formatted string
  * in memory.
  *
  * @param szBuffer pointer to the buffer to place the string in
@@ -584,9 +580,7 @@ int vprintf(FN_PUTC pfnPutC, void *pData, const char *cszFormat, va_list args);
  *         were written. If this value is equal to length the resulting
  *         string will not be NUL terminated.
  */
-int sprintf(char *szBuffer, int length, const char *cszString, ...);
-
-#endif // defined(PRINTF)
+int sformat(char *szBuffer, int length, const char *cszString, ...);
 
 /** Initialise the CRC calculation
  *
