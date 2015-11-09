@@ -478,7 +478,7 @@ int serialPrint(const char *cszString, int length);
 
 /** Print a formatted string to the serial port.
  *
- * This function utilises the @see vprintf function to transmit a formatted
+ * This function utilises the @see vformat function to transmit a formatted
  * string to the serial port.
  *
  * The function is blocking and will not return until all characters have been
@@ -488,30 +488,28 @@ int serialPrint(const char *cszString, int length);
  *
  * @return the number of bytes sent.
  */
-int serialPrintF(const char *cszString, ...);
+int serialFormat(const char *cszString, ...);
 
-/** Get the number of bytes available in the input buffer.
- *
- * This function determines how much data is available to read from the serial
- * port.
+/** Determines if data is available to be read
  *
  * @return the number of bytes available to read immediately.
  */
-int serialAvailable();
+bool serialAvailable();
 
 /** Read a single byte from the serial port
  *
- * This function is non-blocking, if no data is available to read the function
- * will return a value < 0.
+ * If no data is available this function will block until the next character
+ * is received. Use 'serialAvailable()' to determine if data can be read
+ * without blocking.
  *
- * @return the value of the byte read or a value < 0 if no data is available.
+ * @return the value of the byte read
  */
 int serialRead();
 
 // Simple macro to output debug information on the serial port.
 #ifdef DEBUG
 #  define DBG(msg, ...) \
-     serialPrintF("DEBUG: "), serialPrintF(msg, ## __VA_ARGS__), serialWrite('\n')
+     serialFormat("DEBUG: "), serialFormat(msg, ## __VA_ARGS__), serialWrite('\n')
 #else
 #  define DBG(msg, ...)
 #endif
