@@ -7,6 +7,9 @@
 *--------------------------------------------------------------------------*/
 #include "sensnode.h"
 
+// Configuration flag
+static bool g_i2cActive = false;
+
 /** Initialise the I2C interface
  *
  * This function sets up the I2C interface on PIN0/PIN1 and disables the use
@@ -17,7 +20,16 @@
  *         or PIN0/PIN1 have already been configured.
  */
 bool i2cConfig() {
-  return false;
+  // Have we already done the configuration ?
+  if(g_i2cActive)
+    return true;
+  // Are the pins we want available?
+  if(!(pinAvailable(PIN0)&&pinAvailable(PIN1)))
+    return false;
+  // Mark them as being used
+  pinMarkUsed(PIN0);
+  pinMarkUsed(PIN1);
+  // TODO: Do the actual peripheral initialisation
   }
 
 /** Write a sequence of byte values to the i2c slave

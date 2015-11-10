@@ -264,6 +264,29 @@ typedef enum {
   WAKEUP   = 0x04, // Enable wake from sleep (DIGITAL_INPUT only)
   } PIN_FLAG;
 
+/** Determine if a GPIO pin has been configured or not
+ *
+ * This function is used to test if a GPIO pin has already been configure or
+ * if it is available for use. This is mainly for internal use.
+ *
+ * @param pin the GPIO pin to test.
+ *
+ * @return true if the pin has not yet been configured.
+ */
+bool pinAvailable(PIN pin);
+
+/** Mark a pin as being used
+ *
+ * This does no actual configuration of the pin but simply marks it as being
+ * in use and prevents future configuration. This is used internally by the
+ * I2C interface (which disables the use of PIN0 and PIN1 for GPIO use) and
+ * can be used by application code if internal peripherals are being used on
+ * the pin.
+ *
+ * @param pin the GPIO pin to mark as being used.
+ */
+void pinMarkUsed(PIN pin);
+
 /** Configure a GPIO pin
  *
  * @param pin the pin to configure

@@ -98,6 +98,39 @@ void GPIO_ODD_IRQHandler(void) {
 // Public API
 //---------------------------------------------------------------------------
 
+/** Determine if a GPIO pin has been configured or not
+ *
+ * This function is used to test if a GPIO pin has already been configure or
+ * if it is available for use. This is mainly for internal use.
+ *
+ * @param pin the GPIO pin to test.
+ *
+ * @return true if the pin has not yet been configured.
+ */
+bool pinAvailable(PIN pin) {
+  // Is it a valid pin?
+  if((pin<0)||(pin>=PINMAX))
+    return false;
+  return !(g_pinsUsed&SETBIT(pin));
+  }
+
+/** Mark a pin as being used
+ *
+ * This does no actual configuration of the pin but simply marks it as being
+ * in use and prevents future configuration. This is used internally by the
+ * I2C interface (which disables the use of PIN0 and PIN1 for GPIO use) and
+ * can be used by application code if internal peripherals are being used on
+ * the pin.
+ *
+ * @param pin the GPIO pin to mark as being used.
+ */
+void pinMarkUsed(PIN pin) {
+  // Is it a valid pin?
+  if((pin<0)||(pin>=PINMAX))
+    return;
+  g_pinsUsed |= SETBIT(pin);
+  }
+
 /** Configure a GPIO pin
  *
  * @param pin the pin to configure
@@ -107,11 +140,8 @@ void GPIO_ODD_IRQHandler(void) {
  * @return true if the pin was configured as requested.
  */
 bool pinConfig(PIN pin, PIN_MODE mode, uint8_t flags) {
-  // Is it a valid pin?
-  if((pin<0)||(pin>=PINMAX))
-    return false;
-  // Has the pin already been configured?
-  if(g_pinsUsed&SETBIT(pin))
+  // Is the pin available?
+  if(!pinAvailable(pin))
     return false;
   // Does the pin support the requested mode?
   if(!(g_pinInfo[pin].m_modes&SETBIT(mode)))
@@ -166,11 +196,8 @@ bool pinConfig(PIN pin, PIN_MODE mode, uint8_t flags) {
  * @return the current state of the pin.
  */
 bool pinRead(PIN pin) {
-  // Is it a valid pin?
-  if((pin<0)||(pin>=PINMAX))
-    return false;
-  // Has the pin been configured?
-  if(!(g_pinsUsed&SETBIT(pin)))
+  // Is the pin configured?
+  if(pinAvailable(pin))
     return false;
   // Read the pin input state
   return GPIO_PinInGet(g_pinInfo[pin].m_port, g_pinInfo[pin].m_pin) == 1;
@@ -185,12 +212,9 @@ bool pinRead(PIN pin) {
  * @param value the value to set the pin to (true = high, false = low)
  */
 void pinWrite(PIN pin, bool value) {
-  // Is it a valid pin?
-  if((pin<0)||(pin>=PINMAX))
-    return;
-  // Has the pin been configured?
-  if(!(g_pinsUsed&SETBIT(pin)))
-    return;
+  // Is the pin configured?
+  if(pinAvailable(pin))
+    return false;
   // Set the output state of the pin
   if(value)
     GPIO_PinOutSet(g_pinInfo[pin].m_port, g_pinInfo[pin].m_pin);
