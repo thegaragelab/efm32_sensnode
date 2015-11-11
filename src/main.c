@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "sensnode.h"
-#include "nokialcd.h"
+#include "ssd1306.h"
 
 static uint32_t lastChange;
 static const uint8_t SAMPLE[] = { 'h', 'e', 'l', 'l', 'o' };
@@ -35,8 +35,8 @@ static const uint8_t SAMPLE[] = { 'h', 'e', 'l', 'l', 'o' };
  */
 void setup() {
   lastChange = getTicks();
-  // Initialise the LCD
-  lcdInit(PIN0, PIN1, PIN2);
+  // Initialise the OLED
+  oledInit();
   }
 
 /** User application loop
@@ -52,8 +52,8 @@ void loop() {
     lastChange = getTicks();
     state = !state;
     pinWrite(PIN_INDICATOR, state);
-    lcdClear(state);
-    lcdWriteStr(0, 2, "Hello Honey!", state);
+    oledClear(state);
+    oledWriteStr(0, 2, "Hello Honey!", state);
     }
   // Check for serial input
   while(serialAvailable())
