@@ -26,41 +26,6 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Drivers/display.c</name>
-			<type>1</type>
-			<locationURI>STUDIO_SDK_LOC/kits/common/drivers/display.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/displayls013b7dh03.c</name>
-			<type>1</type>
-			<locationURI>STUDIO_SDK_LOC/kits/common/drivers/displayls013b7dh03.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/displaypalemlib.c</name>
-			<type>1</type>
-			<locationURI>STUDIO_SDK_LOC/kits/common/drivers/displaypalemlib.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/retargetio.c</name>
-			<type>1</type>
-			<locationURI>STUDIO_SDK_LOC/kits/common/drivers/retargetio.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/retargettextdisplay.c</name>
-			<type>1</type>
-			<locationURI>STUDIO_SDK_LOC/kits/common/drivers/retargettextdisplay.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/textdisplay.c</name>
-			<type>1</type>
-			<locationURI>STUDIO_SDK_LOC/kits/common/drivers/textdisplay.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/udelay.c</name>
-			<type>1</type>
-			<locationURI>STUDIO_SDK_LOC/kits/common/drivers/udelay.c</locationURI>
-		</link>
-		<link>
 			<name>Graphics/dmd_display.c</name>
 			<type>1</type>
 			<locationURI>STUDIO_SDK_LOC/reptile/glib/dmd/display/dmd_display.c</locationURI>
@@ -124,6 +89,11 @@
 			<name>emlib/em_gpio.c</name>
 			<type>1</type>
 			<locationURI>STUDIO_SDK_LOC/emlib/src/em_gpio.c</locationURI>
+		</link>
+		<link>
+			<name>emlib/em_i2c.c</name>
+			<type>1</type>
+			<locationURI>STUDIO_SDK_LOC/emlib/src/em_i2c.c</locationURI>
 		</link>
 		<link>
 			<name>emlib/em_int.c</name>
