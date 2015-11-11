@@ -413,8 +413,10 @@ bool i2cConfig();
  * @param address the address of the slave device
  * @param pData pointer to a buffer containing the data to send
  * @param count the number of bytes to transmit
+ *
+ * @return number of bytes sent
  */
-void i2cSendTo(uint8_t address, const uint8_t *pData, int count);
+int i2cSendTo(uint8_t address, const uint8_t *pData, int count);
 
 /** Read a sequence of bytes from the i2c slave
  *

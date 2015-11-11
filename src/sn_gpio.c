@@ -214,7 +214,7 @@ bool pinRead(PIN pin) {
 void pinWrite(PIN pin, bool value) {
   // Is the pin configured?
   if(pinAvailable(pin))
-    return false;
+    return;
   // Set the output state of the pin
   if(value)
     GPIO_PinOutSet(g_pinInfo[pin].m_port, g_pinInfo[pin].m_pin);
