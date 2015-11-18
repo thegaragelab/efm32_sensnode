@@ -1,4 +1,3 @@
-#include <SPI.h>
 #include "nrfconst.h"
 
 /*--------------------------------------------------------------------------*
@@ -6,8 +5,11 @@
 *--------------------------------------------------------------------------*/
 
 // Pin assignments
-#define NRF24L01_CE  2
-#define NRF24L01_CSN 3
+#define NRF24L01_CE   2
+#define NRF24L01_CSN  3
+#define PIN_MISO 4
+#define PIN_MOSI 5
+#define PIN_SCK  6
 
 // Network configuration
 #define TX_ADDRESS "hub  "
@@ -28,6 +30,156 @@
 void sendMessage(const char *cszMessage);
 void writeHex(const uint8_t *data, int length);
 
+// SPI configuration
+static bool g_spiPolarity = false;
+static bool g_spiPhase = false;
+static bool g_spiMSBFirst = false;
+
+/** Initialise the SPI subsystem
+ */
+void initSPI() {
+  // Set up the pins
+  pinMode(PIN_MISO, INPUT);
+  pinMode(PIN_MOSI, OUTPUT);
+  pinMode(PIN_SCK, OUTPUT);
+  }
+
+//---------------------------------------------------------------------------
+// Helper functions
+//---------------------------------------------------------------------------
+
+/** Transfer a byte over SPI MSB first
+ *
+ * Uses the currently configured phase and polarity.
+ *
+ * @param data the data to transfer out
+ *
+ * @return the data received on the SPI bus.
+ */
+static uint8_t clockInOutMSB(uint8_t data) {
+  uint8_t mask = 0x80;
+  uint8_t input = 0;
+  delayMicroseconds(10);
+  while(mask) {
+    digitalWrite(PIN_MOSI, data & mask);
+    // Change to active state
+    delayMicroseconds(10);
+    digitalWrite(PIN_SCK, g_spiPolarity?0:1);
+    if(!g_spiPhase)
+      input |= (digitalRead(PIN_MISO)?mask:0);
+    // Change to idle state
+    delayMicroseconds(10);
+    digitalWrite(PIN_SCK, g_spiPolarity?1:0);
+    if(g_spiPhase)
+      input |= (digitalRead(PIN_MISO)?mask:0);
+    // Move to next bit
+    mask = mask >> 1;
+    }
+  return input;
+  }
+
+/** Transfer a byte over SPI LSB first
+ *
+ * Uses the currently configured phase and polarity.
+ *
+ * @param data the data to transfer out
+ *
+ * @return the data received on the SPI bus.
+ */
+static uint8_t clockInOutLSB(uint8_t data) {
+  uint8_t mask = 0x01;
+  uint8_t input = 0;
+  while(mask) {
+    if(g_spiPhase)
+      digitalWrite(PIN_MOSI, data & mask);
+    // Change to active state
+    digitalWrite(PIN_SCK, g_spiPolarity?0:1);
+    if(!g_spiPhase) {
+      input |= (digitalRead(PIN_MISO)?mask:0);
+      digitalWrite(PIN_MOSI, data & mask);
+      }
+    // Change to idle state
+    digitalWrite(PIN_SCK, g_spiPolarity?1:0);
+    if(g_spiPhase)
+      input |= (digitalRead(PIN_MISO)?mask:0);
+    // Move to next bit
+    mask = mask << 1;
+    }
+  return input;
+  }
+
+//---------------------------------------------------------------------------
+// Public API
+//---------------------------------------------------------------------------
+
+/** Configure the SPI interface
+ *
+ * This function sets the operating mode for the SPI interface for future
+ * data transfer calls.
+ *
+ * @param polarity the polarity of the SPI clock - true = HIGH, false = LOW
+ * @param phase the phase of the SPI clock - true = HIGH, false = LOW
+ * @param msbFirst true if data should be sent MSB first, false if LSB first.
+ */
+void spiConfig(bool polarity, bool phase, bool msbFirst) {
+  g_spiPolarity = polarity;
+  g_spiPhase = phase;
+  g_spiMSBFirst = msbFirst;
+  // Set the clock to the idle state for the polarity
+  digitalWrite(PIN_SCK, g_spiPolarity?1:0);
+  }
+
+/** Write a sequence of bytes to the SPI interface
+ *
+ * This function assumes the target device has been selected by the caller.
+ *
+ * @param pData the buffer containing the data to write
+ * @param count the number of bytes to write
+ */
+void spiWrite(const uint8_t *pData, int count) {
+  for(int i=0; i<count; i++) {
+    if(g_spiMSBFirst)
+      clockInOutMSB(pData[i]);
+    else
+      clockInOutLSB(pData[i]);
+    }
+  }
+
+/** Read a sequence of bytes from the SPI interface
+ *
+ * This function assumes the target device has been selected by the caller.
+ * During the read the call will keep MOSI at 0.
+ *
+ * @param pData pointer to a buffer to receive the data
+ * @param count the number of bytes to read.
+ */
+void spiRead(uint8_t *pData, int count) {
+  for(int i=0; i<count; i++) {
+    if(g_spiMSBFirst)
+      pData[i] = clockInOutMSB(0);
+    else
+      pData[i] = clockInOutLSB(0);
+    }
+  }
+
+/** Read and write to the SPI interface
+ *
+ * This function assumes the target device has been selected by the caller.
+ *
+ * @param pOutput a buffer containing the bytes to write to the SPI port
+ * @param pInput a buffer to receive the bytes read from the SPI port
+ * @param count the number of bytes to transfer. Both buffers must be at
+ *        least this size.
+ */
+void spiTransfer(const uint8_t *pOutput, uint8_t *pInput, int count) {
+  for(int i=0; i<count; i++) {
+    if(g_spiMSBFirst)
+      pInput[i] = clockInOutMSB(pOutput[i]);
+    else
+      pInput[i] = clockInOutLSB(pOutput[i]);
+    }
+  }
+
 /** Wrapper class for the NRF24L01
  */
 class NRF24L01 {
@@ -44,6 +196,9 @@ class NRF24L01 {
   private:
     int     m_cePin;                   //!< Chip enable pin
     int     m_csnPin;                  //!< Chip select pin
+    int     m_clkPin;
+    int     m_mosiPin;
+    int     m_misoPin;
     uint8_t m_buffer[MAX_PAYLOAD + 1]; //!< SPI transfer buffer
     Mode    m_mode;                    //!< Transceiver mode
     Mode    m_next;                    //!< Next mode after transmission
@@ -60,27 +215,24 @@ class NRF24L01 {
       writeHex(data, length);
       Serial.write('\n');
       // DEBUG END
-      SPI.beginTransaction(SPISettings(SPI_SPEED, SPI_ORDER, SPI_MODE));
+      spiConfig(false, true, true);
       digitalWrite(m_csnPin, 0);
-      // Transfer the data into the SPI buffer first
-      m_buffer[0] = NRF_W_REGISTER | (reg & NRF_W_REGISTER_DATA);
-      memcpy(&m_buffer[1], data, length);
-      SPI.transfer(m_buffer, length + 1);
+      reg = NRF_W_REGISTER | (reg & NRF_W_REGISTER_DATA);
+      spiWrite(&reg, 1);
+      spiWrite(data, length);
       digitalWrite(m_csnPin, 1);
-      SPI.endTransaction();
       }
 
     /** Read a value from the specified register
      */
     void readRegister(uint8_t reg, uint8_t *data, int length) {
-      SPI.beginTransaction(SPISettings(SPI_SPEED, SPI_ORDER, SPI_MODE));
+      delay(1);
+      spiConfig(false, false, true);
       digitalWrite(m_csnPin, 0);
-      // Transfer the data into the SPI buffer first
-      m_buffer[0] = NRF_R_REGISTER | (reg & NRF_R_REGISTER_DATA);
-      SPI.transfer(m_buffer, length + 1);
-      memcpy(data, &m_buffer[1], length);
+      reg = NRF_R_REGISTER | (reg & NRF_R_REGISTER_DATA);
+      spiWrite(&reg, 1);
+      spiRead(data, length);
       digitalWrite(m_csnPin, 1);
-      SPI.endTransaction();
       // DEBUG BEGIN: Show what we are doing
       Serial.write(';');
       Serial.print("Read ");
@@ -293,7 +445,7 @@ void setup() {
   Serial.begin(57600);
   sendMessage("Initialising network");
   // Initialise SPI
-  SPI.begin();
+  initSPI();
   }
 
 void loop() {
