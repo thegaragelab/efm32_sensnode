@@ -1,3 +1,6 @@
+#include <SPI.h>
+#include "nrfconst.h"
+
 /*--------------------------------------------------------------------------*
 * Simple NRF24L01 to Serial adapter.
 *--------------------------------------------------------------------------*/
@@ -16,15 +19,92 @@
 // Serial input (allow for 64 hex digits + command char + EOL)
 #define MAX_INPUT_LINE 70
 
-// Forward definition so we can report messages from the NRF24L01 class
+// SPI configuration
+#define SPI_SPEED 10000000
+#define SPI_MODE  SPI_MODE0
+#define SPI_ORDER MSBFIRST
+
+// Forward definitions so we can report messages from the NRF24L01 class
 void sendMessage(const char *cszMessage);
+void writeHex(const uint8_t *data, int length);
 
 /** Wrapper class for the NRF24L01
  */
 class NRF24L01 {
   private:
-    int m_cePin; //!< Chip enable pin
-    int m_csnPin; //!< Chip select pin
+    /** Internal modes.
+     */
+    enum Mode {
+      Startup,  //!< Pre-initialisation
+      Idle,     //!< Transceiver idle
+      Transmit, //!< Transmitting data
+      Receive,  //!< Receiving data
+      };
+
+  private:
+    int     m_cePin;                   //!< Chip enable pin
+    int     m_csnPin;                  //!< Chip select pin
+    uint8_t m_buffer[MAX_PAYLOAD + 1]; //!< SPI transfer buffer
+    Mode    m_mode;                    //!< Transceiver mode
+    Mode    m_next;                    //!< Next mode after transmission
+
+  private:
+    /** Write a new value to the specified register
+     */
+    void writeRegister(uint8_t reg, uint8_t *data, int length) {
+      // DEBUG BEGIN: Show what we are doing
+      Serial.write(';');
+      Serial.print("Write ");
+      Serial.print(reg, HEX);
+      Serial.print(" = ");
+      writeHex(data, length);
+      Serial.write('\n');
+      // DEBUG END
+      SPI.beginTransaction(SPISettings(SPI_SPEED, SPI_ORDER, SPI_MODE));
+      digitalWrite(m_csnPin, 0);
+      // Transfer the data into the SPI buffer first
+      m_buffer[0] = NRF_W_REGISTER | (reg & NRF_W_REGISTER_DATA);
+      memcpy(&m_buffer[1], data, length);
+      SPI.transfer(m_buffer, length + 1);
+      digitalWrite(m_csnPin, 1);
+      SPI.endTransaction();
+      }
+
+    /** Read a value from the specified register
+     */
+    void readRegister(uint8_t reg, uint8_t *data, int length) {
+      SPI.beginTransaction(SPISettings(SPI_SPEED, SPI_ORDER, SPI_MODE));
+      digitalWrite(m_csnPin, 0);
+      // Transfer the data into the SPI buffer first
+      m_buffer[0] = NRF_R_REGISTER | (reg & NRF_R_REGISTER_DATA);
+      SPI.transfer(m_buffer, length + 1);
+      memcpy(data, &m_buffer[1], length);
+      digitalWrite(m_csnPin, 1);
+      SPI.endTransaction();
+      // DEBUG BEGIN: Show what we are doing
+      Serial.write(';');
+      Serial.print("Read ");
+      Serial.print(reg, HEX);
+      Serial.print(" = ");
+      writeHex(data, length);
+      Serial.write('\n');
+      // DEBUG END
+      }
+
+    /** Set the adapter to the appropriate mode
+     */
+    void setMode(Mode mode) {
+      // Are we already in the requested mode ?
+      if(m_mode==mode)
+        return;
+      // We can't set, or change from, Mode::Startup
+      if((mode==Mode::Startup)||(m_mode==Mode::Startup)) {
+        sendMessage("Warning: Mode change not supported.");
+        return;
+        }
+      // TODO: Change mode
+      digitalWrite(m_cePin, 0);
+      }
 
   public:
     /** Constructor
@@ -32,6 +112,7 @@ class NRF24L01 {
     NRF24L01(int cePin, int csnPin) {
       m_cePin = cePin;
       m_csnPin = csnPin;
+      m_mode = Mode::Startup;
       }
 
     /** Initialise the module
@@ -40,11 +121,34 @@ class NRF24L01 {
      * etc).
      */
     void init() {
-      // Set up the pins
-      pinMode(m_cePin, OUTPUT);
-      digitalWrite(m_cePin, 0);
-      pinMode(m_csnPin, OUTPUT);
-      digitalWrite(m_csnPin, 1);
+      if(m_mode==Mode::Startup) {
+        // Set up the pins
+        pinMode(m_cePin, OUTPUT);
+        digitalWrite(m_cePin, 0);
+        pinMode(m_csnPin, OUTPUT);
+        digitalWrite(m_csnPin, 1);
+        }
+      else if(m_mode!=Mode::Idle) {
+        // Make sure we are in idle mode
+        setMode(Mode::Idle);
+        }
+      // DEBUG BEGIN: Read and display all register values
+      uint8_t data[5];
+      for(uint8_t reg = NRF_CONFIG; reg <= NRF_FIFO_STATUS; reg++) {
+        switch(reg) {
+          case NRF_RX_ADDR_P0:
+          case NRF_RX_ADDR_P1:
+          case NRF_TX_ADDR:
+            readRegister(reg, data, 5);
+            break;
+          default:
+            readRegister(reg, data, 1);
+            break;
+          }
+        }
+      // DEBUG END
+      // TODO: Configure the addresses and other settings
+      //m_mode = Mode::Idle;
       }
 
     /** Enable or disable the adapter
@@ -57,6 +161,14 @@ class NRF24L01 {
      * @param enabled true if the adapter should be enabled, false otherwise.
      */
     void enable(bool enabled) {
+      if(enabled&&(m_mode==Mode::Idle))
+        setMode(Mode::Receive);
+      if((!enabled)&&(m_mode!=Mode::Idle)) {
+        if(m_mode==Mode::Transmit)
+          m_next = Mode::Idle;
+        else
+          setMode(Mode::Idle);
+        }
       }
 
     /** Check for received packets
@@ -69,6 +181,9 @@ class NRF24L01 {
      *         has been received.
      */
     uint8_t *receive() {
+      if(m_mode!=Mode::Receive)
+        return NULL;
+      // TODO: Check FIFO status
       return NULL;
       }
 
@@ -80,6 +195,11 @@ class NRF24L01 {
      * @param payload pointer to the payload data
      */
     void send(const uint8_t *payload) {
+      if((m_mode!=Mode::Transmit)&&(m_mode!=Mode::Receive))
+        return; // No transmission in Idle or Startup modes
+      if(m_mode==Mode::Receive) {
+        m_next = m_mode; // Remember to come back to receive mode
+        }
       }
 
     /** Update the module state
@@ -88,6 +208,12 @@ class NRF24L01 {
      * for incoming packets, handle transmission and update the module state.
      */
     void update() {
+      if(m_mode==Mode::Receive) {
+        // TODO: Look for new packets
+        }
+      else if(m_mode==Mode::Transmit) {
+        // TODO: If transmission is complete revert to previous mode
+        }
       }
   };
 
@@ -111,12 +237,16 @@ void sendMessage(const char *cszMessage) {
   Serial.write('\n');
   }
 
+void writeHex(const uint8_t *data, int length) {
+  for(int i=0; i<length; i++)
+    Serial.print(data[i], HEX);
+  }
+
 /** Send a packet on the serial link
  */
 void sendPacket(const uint8_t *packet) {
   Serial.write('<');
-  for(int i=0; i<MAX_PAYLOAD; i++)
-    Serial.print(packet[i], HEX);
+  writeHex(packet, MAX_PAYLOAD);
   Serial.write('\n');
   }
 
@@ -159,6 +289,8 @@ void setup() {
   // Initialise the serial port
   Serial.begin(57600);
   sendMessage("Initialising network");
+  // Initialise SPI
+  SPI.begin();
   }
 
 void loop() {
