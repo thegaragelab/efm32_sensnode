@@ -6,8 +6,8 @@
 *--------------------------------------------------------------------------*/
 
 // Pin assignments
-#define NRF24L01_CE  12
-#define NRF24L01_CSN 13
+#define NRF24L01_CE  2
+#define NRF24L01_CSN 3
 
 // Network configuration
 #define TX_ADDRESS "hub  "
@@ -20,7 +20,7 @@
 #define MAX_INPUT_LINE 70
 
 // SPI configuration
-#define SPI_SPEED 10000000
+#define SPI_SPEED 1000000
 #define SPI_MODE  SPI_MODE0
 #define SPI_ORDER MSBFIRST
 
@@ -97,8 +97,8 @@ class NRF24L01 {
       // Are we already in the requested mode ?
       if(m_mode==mode)
         return;
-      // We can't set, or change from, Mode::Startup
-      if((mode==Mode::Startup)||(m_mode==Mode::Startup)) {
+      // We can't set, or change from, Startup
+      if((mode==Startup)||(m_mode==Startup)) {
         sendMessage("Warning: Mode change not supported.");
         return;
         }
@@ -112,7 +112,7 @@ class NRF24L01 {
     NRF24L01(int cePin, int csnPin) {
       m_cePin = cePin;
       m_csnPin = csnPin;
-      m_mode = Mode::Startup;
+      m_mode = Startup;
       }
 
     /** Initialise the module
@@ -121,16 +121,16 @@ class NRF24L01 {
      * etc).
      */
     void init() {
-      if(m_mode==Mode::Startup) {
+      if(m_mode==Startup) {
         // Set up the pins
         pinMode(m_cePin, OUTPUT);
         digitalWrite(m_cePin, 0);
         pinMode(m_csnPin, OUTPUT);
         digitalWrite(m_csnPin, 1);
         }
-      else if(m_mode!=Mode::Idle) {
+      else if(m_mode!=Idle) {
         // Make sure we are in idle mode
-        setMode(Mode::Idle);
+        setMode(Idle);
         }
       // DEBUG BEGIN: Read and display all register values
       uint8_t data[5];
@@ -148,7 +148,7 @@ class NRF24L01 {
         }
       // DEBUG END
       // TODO: Configure the addresses and other settings
-      //m_mode = Mode::Idle;
+      //m_mode = Idle;
       }
 
     /** Enable or disable the adapter
@@ -161,13 +161,13 @@ class NRF24L01 {
      * @param enabled true if the adapter should be enabled, false otherwise.
      */
     void enable(bool enabled) {
-      if(enabled&&(m_mode==Mode::Idle))
-        setMode(Mode::Receive);
-      if((!enabled)&&(m_mode!=Mode::Idle)) {
-        if(m_mode==Mode::Transmit)
-          m_next = Mode::Idle;
+      if(enabled&&(m_mode==Idle))
+        setMode(Receive);
+      if((!enabled)&&(m_mode!=Idle)) {
+        if(m_mode==Transmit)
+          m_next = Idle;
         else
-          setMode(Mode::Idle);
+          setMode(Idle);
         }
       }
 
@@ -181,7 +181,7 @@ class NRF24L01 {
      *         has been received.
      */
     uint8_t *receive() {
-      if(m_mode!=Mode::Receive)
+      if(m_mode!=Receive)
         return NULL;
       // TODO: Check FIFO status
       return NULL;
@@ -195,9 +195,9 @@ class NRF24L01 {
      * @param payload pointer to the payload data
      */
     void send(const uint8_t *payload) {
-      if((m_mode!=Mode::Transmit)&&(m_mode!=Mode::Receive))
+      if((m_mode!=Transmit)&&(m_mode!=Receive))
         return; // No transmission in Idle or Startup modes
-      if(m_mode==Mode::Receive) {
+      if(m_mode==Receive) {
         m_next = m_mode; // Remember to come back to receive mode
         }
       }
@@ -208,10 +208,10 @@ class NRF24L01 {
      * for incoming packets, handle transmission and update the module state.
      */
     void update() {
-      if(m_mode==Mode::Receive) {
+      if(m_mode==Receive) {
         // TODO: Look for new packets
         }
-      else if(m_mode==Mode::Transmit) {
+      else if(m_mode==Transmit) {
         // TODO: If transmission is complete revert to previous mode
         }
       }
@@ -238,8 +238,11 @@ void sendMessage(const char *cszMessage) {
   }
 
 void writeHex(const uint8_t *data, int length) {
-  for(int i=0; i<length; i++)
+  for(int i=0; i<length; i++) {
+    if(data[i]<=0x0f)
+      Serial.write('0');
     Serial.print(data[i], HEX);
+    }
   }
 
 /** Send a packet on the serial link
