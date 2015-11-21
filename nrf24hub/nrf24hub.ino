@@ -12,8 +12,8 @@
 #define PIN_SCK  6
 
 // Network configuration
-#define TX_ADDRESS "hub  "
-#define RX_ADDRESS "node "
+#define RX_ADDRESS (const uint8_t *)"hub  "
+#define TX_ADDRESS (const uint8_t *)"node "
 
 // Maximum payload size
 #define MAX_PAYLOAD 32
@@ -63,12 +63,10 @@ static uint8_t clockInOutMSB(uint8_t data) {
   while(mask) {
     digitalWrite(PIN_MOSI, data & mask);
     // Change to active state
-    delayMicroseconds(10);
-    digitalWrite(PIN_SCK, g_spiPolarity?0:1);
     if(!g_spiPhase)
       input |= (digitalRead(PIN_MISO)?mask:0);
+    digitalWrite(PIN_SCK, g_spiPolarity?0:1);
     // Change to idle state
-    delayMicroseconds(10);
     digitalWrite(PIN_SCK, g_spiPolarity?1:0);
     if(g_spiPhase)
       input |= (digitalRead(PIN_MISO)?mask:0);
@@ -155,6 +153,7 @@ void spiWrite(const uint8_t *pData, int count) {
  */
 void spiRead(uint8_t *pData, int count) {
   for(int i=0; i<count; i++) {
+    delayMicroseconds(10);
     if(g_spiMSBFirst)
       pData[i] = clockInOutMSB(0);
     else
@@ -201,12 +200,11 @@ class NRF24L01 {
     int     m_misoPin;
     uint8_t m_buffer[MAX_PAYLOAD + 1]; //!< SPI transfer buffer
     Mode    m_mode;                    //!< Transceiver mode
-    Mode    m_next;                    //!< Next mode after transmission
 
   private:
     /** Write a new value to the specified register
      */
-    void writeRegister(uint8_t reg, uint8_t *data, int length) {
+    void writeRegister(uint8_t reg, const uint8_t *data, int length) {
       // DEBUG BEGIN: Show what we are doing
       Serial.write(';');
       Serial.print("Write ");
@@ -226,9 +224,9 @@ class NRF24L01 {
     /** Read a value from the specified register
      */
     void readRegister(uint8_t reg, uint8_t *data, int length) {
-      delay(1);
       spiConfig(false, false, true);
       digitalWrite(m_csnPin, 0);
+      delayMicroseconds(10);
       reg = NRF_R_REGISTER | (reg & NRF_R_REGISTER_DATA);
       spiWrite(&reg, 1);
       spiRead(data, length);
@@ -243,19 +241,70 @@ class NRF24L01 {
       // DEBUG END
       }
 
+    /** Write a single command to the module
+     */
+    void writeCommand(uint8_t cmd) {
+      spiConfig(false, false, true);
+      digitalWrite(m_csnPin, 0);
+      delayMicroseconds(10);
+      spiWrite(&cmd, 1);
+      digitalWrite(m_csnPin, 1);
+      }
+
+    /** Read a packet from the FIFO buffer
+     *  
+     */
+    void readPacket(uint8_t *packet) {
+      spiConfig(false, true, true);
+      digitalWrite(m_csnPin, 0);
+      writeCommand(NRF_R_RX_PAYLOAD);
+      spiRead(packet, 32);
+      digitalWrite(m_csnPin, 1);
+      }
+
+    /** Write a packet to the FIFO buffer
+     *  
+     */
+    void writePacket(const uint8_t *packet) {
+      spiConfig(false, true, true);
+      digitalWrite(m_csnPin, 0);
+      writeCommand(NRF_W_TX_PAYLOAD);
+      spiWrite(packet, 32);
+      digitalWrite(m_csnPin, 1);
+      }
+      
     /** Set the adapter to the appropriate mode
      */
     void setMode(Mode mode) {
       // Are we already in the requested mode ?
       if(m_mode==mode)
         return;
-      // We can't set, or change from, Startup
+      // We can't set, or change from, Startup - use init to do that
       if((mode==Startup)||(m_mode==Startup)) {
         sendMessage("Warning: Mode change not supported.");
         return;
         }
-      // TODO: Change mode
+      // Change mode
       digitalWrite(m_cePin, 0);
+      uint8_t config;
+      readRegister(NRF_CONFIG, &config, 1);
+      if(mode==Idle) {
+        sendMessage("Entering IDLE mode.");
+        config &= ~NRF_CONFIG_PWR_UP;
+        }
+      else if(mode==Receive) {
+        sendMessage("Entering RECEIVE mode.");
+        config |= (NRF_CONFIG_PWR_UP | NRF_CONFIG_PRIM_RX);
+        }
+      else if(mode==Transmit) {
+        sendMessage("Entering TRANSMIT mode.");
+        config |= NRF_CONFIG_PWR_UP;
+        config &= ~NRF_CONFIG_PRIM_RX;
+        }
+      writeRegister(NRF_CONFIG, &config, 1);
+      if(mode!=Idle) // Activate radio
+        digitalWrite(m_cePin, 1);
+      m_mode = mode;
       }
 
   public:
@@ -284,23 +333,51 @@ class NRF24L01 {
         // Make sure we are in idle mode
         setMode(Idle);
         }
+      // Set up the module
+      uint8_t data;
+      // CONFIG register (no interrupts, 2 byte CRC, power down
+      data = NRF_CONFIG_MASK_RX_DR |
+             NRF_CONFIG_MASK_TX_DS |
+             NRF_CONFIG_MASK_MAX_RT |
+             NRF_CONFIG_EN_CRC |
+             NRF_CONFIG_CRCO;
+      writeRegister(NRF_CONFIG, &data, 1);
+      // Disable shockburst (auto ack)
+      data = 0;
+      writeRegister(NRF_EN_AA, &data, 1);
+      // Only 1 data pipe
+      data = NRF_EN_RXADDR_ERX_P0;
+      writeRegister(NRF_EN_RXADDR, &data, 1);
+      // 5 byte addresses
+      data = NRF_SETUP_AW_5BYTES;
+      writeRegister(NRF_SETUP_AW, &data, 1);
+      // RX address (our address)
+      writeRegister(NRF_RX_ADDR_P0, RX_ADDRESS, 5);
+      // TX address (target address)
+      writeRegister(NRF_TX_ADDR, TX_ADDRESS, 5);
+      // Payload size
+      data = 32;
+      writeRegister(NRF_RX_PW_P0, &data, 1);
+      // Flush any left over payloads
+      writeCommand(NRF_FLUSH_TX);
+      writeCommand(NRF_FLUSH_RX);
+      // All done
       // DEBUG BEGIN: Read and display all register values
-      uint8_t data[5];
+      uint8_t debug[5];
       for(uint8_t reg = NRF_CONFIG; reg <= NRF_FIFO_STATUS; reg++) {
         switch(reg) {
           case NRF_RX_ADDR_P0:
           case NRF_RX_ADDR_P1:
           case NRF_TX_ADDR:
-            readRegister(reg, data, 5);
+            readRegister(reg, debug, 5);
             break;
           default:
-            readRegister(reg, data, 1);
+            readRegister(reg, debug, 1);
             break;
           }
         }
       // DEBUG END
-      // TODO: Configure the addresses and other settings
-      //m_mode = Idle;
+      m_mode = Idle;
       }
 
     /** Enable or disable the adapter
@@ -313,14 +390,10 @@ class NRF24L01 {
      * @param enabled true if the adapter should be enabled, false otherwise.
      */
     void enable(bool enabled) {
-      if(enabled&&(m_mode==Idle))
+      if(enabled)
         setMode(Receive);
-      if((!enabled)&&(m_mode!=Idle)) {
-        if(m_mode==Transmit)
-          m_next = Idle;
-        else
-          setMode(Idle);
-        }
+      else
+        setMode(Idle);
       }
 
     /** Check for received packets
@@ -335,8 +408,14 @@ class NRF24L01 {
     uint8_t *receive() {
       if(m_mode!=Receive)
         return NULL;
-      // TODO: Check FIFO status
-      return NULL;
+      // Check FIFO status
+      uint8_t fifo;
+      readRegister(NRF_FIFO_STATUS, &fifo, 1);
+      if(fifo&NRF_FIFO_STATUS_RX_EMPTY)
+        return NULL;
+      // At least one packet received, copy it in
+      readPacket(m_buffer);
+      return m_buffer;
       }
 
     /** Send a packet
@@ -347,26 +426,22 @@ class NRF24L01 {
      * @param payload pointer to the payload data
      */
     void send(const uint8_t *payload) {
-      if((m_mode!=Transmit)&&(m_mode!=Receive))
+      if(m_mode!=Receive)
         return; // No transmission in Idle or Startup modes
-      if(m_mode==Receive) {
-        m_next = m_mode; // Remember to come back to receive mode
+      // Switch to idle mode
+      setMode(Idle);
+      sendPacket(payload);
+      setMode(Transmit);
+      // Wait for packet to leave
+      uint8_t fifo = 0;
+      while(!(fifo&NRF_FIFO_STATUS_TX_EMPTY)) {
+        delay(1);
+        readRegister(NRF_FIFO_STATUS, &fifo, 1);
         }
+      // Return to receive mode
+      setMode(Receive);
       }
-
-    /** Update the module state
-     *
-     * This method must be called in the main application loop. It will check
-     * for incoming packets, handle transmission and update the module state.
-     */
-    void update() {
-      if(m_mode==Receive) {
-        // TODO: Look for new packets
-        }
-      else if(m_mode==Transmit) {
-        // TODO: If transmission is complete revert to previous mode
-        }
-      }
+      
   };
 
 // Globals
@@ -450,8 +525,6 @@ void setup() {
 
 void loop() {
   uint8_t *packet;
-  // Allow the NRF to update it's internal state
-  g_nrf.update();
   // Check for any serial input
   while(Serial.available()) {
     char ch = Serial.read();
