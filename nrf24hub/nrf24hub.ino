@@ -205,14 +205,6 @@ class NRF24L01 {
     /** Write a new value to the specified register
      */
     void writeRegister(uint8_t reg, const uint8_t *data, int length) {
-      // DEBUG BEGIN: Show what we are doing
-      Serial.write(';');
-      Serial.print("Write ");
-      Serial.print(reg, HEX);
-      Serial.print(" = ");
-      writeHex(data, length);
-      Serial.write('\n');
-      // DEBUG END
       spiConfig(false, true, true);
       digitalWrite(m_csnPin, 0);
       reg = NRF_W_REGISTER | (reg & NRF_W_REGISTER_DATA);
@@ -231,14 +223,6 @@ class NRF24L01 {
       spiWrite(&reg, 1);
       spiRead(data, length);
       digitalWrite(m_csnPin, 1);
-      // DEBUG BEGIN: Show what we are doing
-      Serial.write(';');
-      Serial.print("Read ");
-      Serial.print(reg, HEX);
-      Serial.print(" = ");
-      writeHex(data, length);
-      Serial.write('\n');
-      // DEBUG END
       }
 
     /** Write a single command to the module
@@ -362,21 +346,6 @@ class NRF24L01 {
       writeCommand(NRF_FLUSH_TX);
       writeCommand(NRF_FLUSH_RX);
       // All done
-      // DEBUG BEGIN: Read and display all register values
-      uint8_t debug[5];
-      for(uint8_t reg = NRF_CONFIG; reg <= NRF_FIFO_STATUS; reg++) {
-        switch(reg) {
-          case NRF_RX_ADDR_P0:
-          case NRF_RX_ADDR_P1:
-          case NRF_TX_ADDR:
-            readRegister(reg, debug, 5);
-            break;
-          default:
-            readRegister(reg, debug, 1);
-            break;
-          }
-        }
-      // DEBUG END
       m_mode = Idle;
       }
 
