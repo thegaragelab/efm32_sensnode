@@ -38,14 +38,11 @@ static uint8_t clockInOutMSB(uint8_t data) {
   uint8_t mask = 0x80;
   uint8_t input = 0;
   while(mask) {
-    if(g_spiPhase)
-      pinWrite(PIN_MOSI, data & mask);
+    pinWrite(PIN_MOSI, data & mask);
     // Change to active state
-    pinWrite(PIN_SCK, g_spiPolarity?0:1);
-    if(!g_spiPhase) {
+    if(!g_spiPhase)
       input |= (pinRead(PIN_MISO)?mask:0);
-      pinWrite(PIN_MOSI, data & mask);
-      }
+    pinWrite(PIN_SCK, g_spiPolarity?0:1);
     // Change to idle state
     pinWrite(PIN_SCK, g_spiPolarity?1:0);
     if(g_spiPhase)
@@ -68,8 +65,8 @@ static uint8_t clockInOutLSB(uint8_t data) {
   uint8_t mask = 0x01;
   uint8_t input = 0;
   while(mask) {
-    if(g_spiPhase)
-      pinWrite(PIN_MOSI, data & mask);
+    if(!g_spiPhase)
+      input |= (pinRead(PIN_MISO)?mask:0);
     // Change to active state
     pinWrite(PIN_SCK, g_spiPolarity?0:1);
     if(!g_spiPhase) {
