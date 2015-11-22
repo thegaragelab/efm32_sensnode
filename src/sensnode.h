@@ -416,7 +416,7 @@ bool i2cConfig();
  *
  * @return number of bytes sent
  */
-int i2cSendTo(uint8_t address, const uint8_t *pData, int count);
+int i2cSendTo(uint8_t address, uint8_t *pData, int count);
 
 /** Read a sequence of bytes from the i2c slave
  *
