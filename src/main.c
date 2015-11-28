@@ -19,12 +19,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include "sensnode.h"
-#include "ssd1306.h"
+#include "nrf24l01.h"
 
 static uint32_t lastChange;
-static const uint8_t SAMPLE[] = { 'h', 'e', 'l', 'l', 'o' };
-
+static uint8_t packet[PAYLOAD_SIZE];
 
 /** User application initialisation
  *
@@ -35,8 +35,8 @@ static const uint8_t SAMPLE[] = { 'h', 'e', 'l', 'l', 'o' };
  */
 void setup() {
   lastChange = getTicks();
-  // Initialise the OLED
-  oledInit();
+  // Initialise the NRF module
+  nrfInit(PIN_CE, PIN_CSN);
   }
 
 /** User application loop
@@ -47,15 +47,13 @@ void setup() {
  */
 void loop() {
   // EMU_EnterEM2(false);
-  static bool state = false;
   if(timeExpired(lastChange, 1, SECOND)) {
     lastChange = getTicks();
-    state = !state;
-    pinWrite(PIN_INDICATOR, state);
-    oledClear(state);
-    oledWriteStr(0, 2, "Hello Honey!", state);
+    // TODO: Update sensors
+    strcpy((char *)packet, "Hello World!");
+    // Send out the new packet
+    nrfEnable(true);
+    nrfSend(packet);
+    nrfEnable(false);
     }
-  // Check for serial input
-  while(serialAvailable())
-    serialWrite(serialRead());
   }

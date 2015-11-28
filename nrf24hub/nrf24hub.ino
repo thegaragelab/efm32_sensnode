@@ -236,7 +236,7 @@ class NRF24L01 {
       }
 
     /** Read a packet from the FIFO buffer
-     *  
+     *
      */
     void readPacket(uint8_t *packet) {
       spiConfig(false, true, true);
@@ -247,7 +247,7 @@ class NRF24L01 {
       }
 
     /** Write a packet to the FIFO buffer
-     *  
+     *
      */
     void writePacket(const uint8_t *packet) {
       spiConfig(false, true, true);
@@ -256,7 +256,7 @@ class NRF24L01 {
       spiWrite(packet, 32);
       digitalWrite(m_csnPin, 1);
       }
-      
+
     /** Set the adapter to the appropriate mode
      */
     void setMode(Mode mode) {
@@ -399,7 +399,7 @@ class NRF24L01 {
         return; // No transmission in Idle or Startup modes
       // Switch to idle mode
       setMode(Idle);
-      sendPacket(payload);
+      writePacket(payload);
       setMode(Transmit);
       // Wait for packet to leave
       uint8_t fifo = 0;
@@ -410,7 +410,7 @@ class NRF24L01 {
       // Return to receive mode
       setMode(Receive);
       }
-      
+
   };
 
 // Globals
