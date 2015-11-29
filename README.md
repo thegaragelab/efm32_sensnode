@@ -7,10 +7,10 @@ This repository consists of the code and hardware design for my entry into the
 
 This entry is a component of a larger project called [Sensaura](http://sensaura.org)
 which provides hardware and software solutions to implement low power sensors
-communicating over a wireless network protocol and publish values to a [MQTT]()
+communicating over a wireless network protocol and publish values to a MQTT
 message bus.
 
-This project consists of a prototype implementation of a [SensNode](http://sensnode.sensauara.org)
+This project consists of a prototype implementation of a [SensNode](http://sensauara.org/pages/sensnode/about.html)
 processor module using a [EFM32 Zero Gecko](https://www.silabs.com/products/mcu/lowpower/Pages/efm32zg-stk3200.aspx)
 starter kit and a simple sensor backpack to test the power consumption and
 functionality of the design.
@@ -18,8 +18,8 @@ functionality of the design.
 ## Usefulness
 
 The goal is to develop a small, cheap, wireless sensor board with a well defined
-[API](http://sensnode.sensaura.org/apidocs/sensnode), [footprint](http://sensnode.sensaura.org/pages/hardware.html)
-and [network protocol](http://sensnet.sensaura.org) that can be used as the basis
+[API](http://sensaura.org/apidocs/sensnode), [footprint](http://sensaura.org/pages/sensnode/hardware.html)
+and [network protocol](http://sensaura.org/pages/sensnet/about.html) that can be used as the basis
 for a range of customised sensors.
 
 The sensors are intended to be run from batteries (the ideal design should
@@ -51,8 +51,7 @@ to difficulty exposing those features in a generic way.
 ## Implementation
 
 Due to time constraints the implementation of the prototype is not yet complete,
-some functionality is untested or only partially implemented. The current code
-base is [available on GitHub]() and will be updated as more progress is made.
+some functionality is untested or only partially implemented.
 
 ### Hardware
 
@@ -83,8 +82,8 @@ network over a serial port connection and was assembled on a breadboard.
 
 ### Software
 
-As the [SensNode](http://sensnode.sensaura.org) is intended to be processor
-agnostic I use a [simple API](http://sensnode.sensaura.org/apidocs/sensnode) that
+As the [SensNode](http://sensaura.org/pages/sensnode/about.html) is intended to be processor
+agnostic I use a [simple API](http://sensaura.org/apidocs/sensnode/index.html) that
 provides generic access to GPIO, analog and timing functions. For the purposes
 of the prototype I implemented a shim layer that implements the SensNode API
 using the [EMLIB Library](http://devtools.silabs.com/dl/documentation/doxygen/EM_CMSIS_P1_DOC_4.0.0/emlib_zero/html/index.html).
@@ -135,4 +134,3 @@ This prototype is part of a much larger project which is moving somewhat slowly
 with only a single person working on it part time. If you find the design concept
 interesting I encourage you to take a look at the [Sensaura](http://sensaura.org)
 project in more detail - I would welcome any feedback or assistance.
-
